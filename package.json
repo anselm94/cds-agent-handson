@@ -1,0 +1,18 @@
+{
+  "name": "cds-agent-handson",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@langchain/core": "^1.2.6",
+    "@sap-ai-sdk/langchain": "^2.14.0",
+    "@sap/cds": "^10",
+    "langchain": "^1.5.6"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^3"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "private": true
+}

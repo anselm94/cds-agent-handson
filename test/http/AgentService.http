@@ -1,0 +1,14 @@
+@server=http://localhost:4004
+@username=alice
+@password=
+
+
+### invoke
+# @name invoke_POST
+POST {{server}}/odata/v4/agent/invoke
+Content-Type: application/json
+Authorization: Basic {{username}}:{{password}}
+
+{
+  "message": "What is SAP?"
+}
