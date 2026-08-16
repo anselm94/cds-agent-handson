@@ -1,13 +1,35 @@
+#############
+### LOCAL ###
+#############
 @server=http://localhost:4004
-@username=alice
-@password=
+@header-authorization = Basic alice:
 
+##############
+### REMOTE ###
+##############
+@server={{$dotenv URL}}
+
+### Request 1: OAuth2 Client Credentials Flow to get an access token
+# @name login
+POST {{$dotenv AUTH_TOKEN_URL}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+&client_id={{$dotenv CLIENT_ID}}
+&client_secret={{$dotenv CLIENT_SECRET}}
+
+### Save the token to a variable
+@header-authorization = Bearer {{login.response.body.access_token}}
+
+##################
+### OPERATIONS ###
+##################
 
 ### invoke
 # @name invoke_POST
 POST {{server}}/odata/v4/agent/invoke
 Content-Type: application/json
-Authorization: Basic {{username}}:{{password}}
+Authorization: {{header-authorization}}
 
 {
   "message": "What is SAP?"

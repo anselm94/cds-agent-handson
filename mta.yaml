@@ -1,0 +1,58 @@
+_schema-version: 3.3.0
+ID: anselm-capla
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+
+modules:
+  - name: anselm-capla-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+      routes:
+        - route: "${default-url}"
+        - route: "${default-host}.cert.${default-domain}"
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+          srv-cert-url: '${protocol}://${default-host}.cert.${default-domain}'
+    requires:
+      - name: ai-core-us
+      - name: anselm-capla-ias
+        parameters:
+          service-key:
+            name: capla-ias-service-key
+          config:
+            credential-type: SECRET
+            app-identifier: srv
+
+resources:
+  - name: ai-core-us
+    type: org.cloudfoundry.existing-service
+  - name: anselm-capla-ias
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: identity
+      service-name: anselm-capla-ias
+      service-plan: application
+      config:
+        provided-apis:
+          - name: anselm-capla-ias-api
+            description: API exposed by the application
+        display-name: anselm-capla
+        oauth2-configuration:
+          token-policy:
+            access-token-format: "jwt"
+        xsuaa-cross-consumption: true
