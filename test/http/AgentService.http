@@ -32,5 +32,5 @@ Content-Type: application/json
 Authorization: {{header-authorization}}
 
 {
-  "message": "What is SAP?"
+  "message": "Update the stock of the book - 'A Wizard of Earthsea' and increment by 5 units"
 }

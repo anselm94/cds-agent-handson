@@ -12,9 +12,9 @@ export class AgentService extends cds.ApplicationService {
 
       const result = await helloAgent.invoke(agentInputs);
 
-      console.log(result.messages[1].content);
+      console.log(result.messages[result.messages.length - 1].content);
 
-      return req.reply(result.messages[1].content);
+      return req.reply(result.messages[result.messages.length - 1].content);
     });
 
     return super.init();
