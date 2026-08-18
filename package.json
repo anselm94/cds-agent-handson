@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "@cap-js/hana": "^3",
     "@langchain/core": "^1.2.6",
     "@sap-ai-sdk/langchain": "^2.14.0",
     "@sap/cds": "^10",

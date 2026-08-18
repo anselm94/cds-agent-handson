@@ -37,6 +37,15 @@ modules:
           config:
             credential-type: SECRET
             app-identifier: srv
+      - name: anselm-capla-db
+
+  - name: anselm-capla-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: anselm-capla-db
 
 resources:
   - name: ai-core-us
@@ -56,3 +65,9 @@ resources:
           token-policy:
             access-token-format: "jwt"
         xsuaa-cross-consumption: true
+
+  - name: anselm-capla-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
