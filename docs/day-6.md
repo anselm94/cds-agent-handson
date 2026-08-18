@@ -255,3 +255,29 @@ Then run the request in `AgentService.http`. The agent should:
 3. Return the new stock value for *A Wizard of Earthsea*.
 
 You can also try a read-only prompt such as *"Which books are cheaper than 15?"* to see the `get_books` tool in action.
+
+---
+
+## Step 9 — Switch to a real database with HANA
+
+So far the bookshop runs on CAP's in-memory SQLite. Before deploying to Cloud Foundry, point the model at a real database by adding SAP HANA Cloud to the project:
+
+```bash
+cds add hana
+```
+
+This command changes the project in one step:
+
+1. **Adds `@cap-js/hana`** to `package.json` — the CAP driver for HANA, so the runtime talks to HANA instead of SQLite.
+2. **Adds a HANA DB deployer module** (`anselm-capla-db-deployer`, type `hdb`, path `gen/db`) to `mta.yaml`. On deployment, this buildpack compiles the CDS model from `gen/db` and deploys it into the HANA container.
+3. **Adds a HANA HDI service** (`anselm-capla-db`, type `com.sap.xs.hdi-container`, service `hana`, plan `hdi-shared`) as a resource in `mta.yaml` — the HANA HDI container that holds your schema and data.
+4. **Wires the app to the database** — the `anselm-capla-srv` module now also `requires` the `anselm-capla-db` resource, so the runtime gets the HANA credentials bound to it.
+
+After the change, `mta.yaml` gains the new deployer module and HDI container resource, and `package.json` gains the `@cap-js/hana` dependency — everything needed to run the bookshop on HANA in the cloud.
+
+To pick up these changes, rebuild the archive and deploy it again (as in Day 5):
+
+```bash
+mbt build
+cf deploy mta_archives/anselm-capla_1.0.0.mtar
+```

@@ -28,7 +28,15 @@ npm install -g mbt
 
 ### Install `make` (Windows only)
 
-`mbt` requires `make` to execute build scripts. On Windows, install it via Chocolatey:
+`mbt` requires `make` to execute build scripts. On Windows, install it via Chocolatey.
+
+First, ensure **Chocolatey** is installed. If not, run the following in PowerShell **as Administrator**:
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+```
+
+Then install `make`:
 
 ```powershell
 choco install make
