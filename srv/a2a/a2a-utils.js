@@ -25,8 +25,7 @@ export function createTaskUpdate(contextId, taskId, message, status) {
       timestamp: new Date().toISOString(),
       message: statusMessage,
     },
-    final:
-      status !== "working" && status !== "submitted" && status !== "unknown",
+    final: status === "input-required",
   };
 }
 

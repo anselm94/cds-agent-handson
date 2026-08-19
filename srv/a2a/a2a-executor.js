@@ -1,9 +1,9 @@
 import { Command, INTERRUPT, isInterrupted } from "@langchain/langgraph";
 import cds from "@sap/cds";
 import {
-    createMessageUpdate,
-    createNewTask,
-    createTaskUpdate,
+  createMessageUpdate,
+  createNewTask,
+  createTaskUpdate,
 } from "./a2a-utils.js";
 
 const LOG = cds.log("a2a-agent");
@@ -35,7 +35,9 @@ export class LangChainAgentExecutor {
         user: cds.context?.user?.id,
         tenant: cds.context?.tenant,
       },
-      configurable: { thread_id: contextId },
+      configurable: {
+        thread_id: contextId,
+      },
     };
 
     if (!existingTask) {
@@ -84,23 +86,15 @@ export class LangChainAgentExecutor {
         );
       } else {
         const msg = res.messages[res.messages.length - 1].content;
-        eventBus.publish(
-          createMessageUpdate(contextId, taskId, msg, false, true),
-        );
-        eventBus.finished();
+        eventBus.publish(createTaskUpdate(contextId, taskId, msg, "completed"));
       }
     } catch (error) {
       LOG.error(`Error executing agent: ${error}`);
       eventBus.publish(
         createTaskUpdate(contextId, taskId, `Error: ${error}`, "failed"),
       );
-      eventBus.finished();
-      return;
     }
 
-    eventBus.publish(
-      createTaskUpdate(contextId, taskId, undefined, "completed"),
-    );
     eventBus.finished();
   }
 

@@ -1,0 +1,13 @@
+schema_version: 3.28.0
+
+metadata:
+  namespace: joule.ext
+  name: a2a_bookshop_anselm
+  version: 1.0.0
+  display_name: A2A Bookshop Assistant
+  description: Bookshop assistant A2A agent for SAP Joule
+
+system_aliases:
+  BookshopAssistantA2A:
+    destination: a2a_bookshop_anselm
+ 

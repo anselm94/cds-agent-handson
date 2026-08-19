@@ -384,7 +384,7 @@ cds.on("bootstrap", async (app) => {
   const agentExecutor = new LangChainAgentExecutor(bookshopAgent);
 
   // A2A JSON-RPC endpoint
-  app.get(`/a2a/.well-known/agent.json`, (_, res) =>
+  routerA2A.get(`/.well-known/agent.json`, (_, res) =>
     res.json(BookshopAgentCard),
   );
   routerA2A.use(

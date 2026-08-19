@@ -16,7 +16,12 @@
     "@sap/cds-dk": "^10"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "joule:login": "joule login --no-app-tid",
+    "joule:list": "joule list",
+    "joule:compile": "joule compile ./joule-capability ./joule-capability",
+    "joule:deploy": "joule deploy ./joule-capability/da.sapdas.yaml",
+    "joule:launch": "joule launch a2a_bookshop_<identity>"
   },
   "private": true,
   "cds": {
