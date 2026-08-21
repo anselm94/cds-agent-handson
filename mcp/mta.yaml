@@ -1,0 +1,64 @@
+_schema-version: 3.3.0
+ID: anselm-capmcp
+version: 1.0.0
+description: "A simple CAP project."
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+modules:
+  - name: anselm-capmcp-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      instances: 1
+      buildpack: nodejs_buildpack
+      routes:
+        - route: "${default-url}"
+        - route: "${default-host}.cert.${default-domain}"
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+          srv-cert-url: '${protocol}://${default-host}.cert.${default-domain}'
+    requires:
+      - name: anselm-capmcp-destination
+      - name: anselm-capmcp-connectivity
+      - name: anselm-capmcp-ias
+        parameters:
+          config:
+            credential-type: X509_GENERATED
+            app-identifier: srv
+
+resources:
+  - name: anselm-capmcp-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite
+  - name: anselm-capmcp-connectivity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: connectivity
+      service-plan: lite
+  - name: anselm-capmcp-ias
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: identity
+      service-name: anselm-capmcp-ias
+      service-plan: application
+      config:
+        provided-apis:
+          - name: anselm-capmcp-ias-api
+            description: API exposed by the application
+        display-name: anselm-capmcp
+        oauth2-configuration:
+          token-policy:
+            access-token-format: "jwt"
+        xsuaa-cross-consumption: true

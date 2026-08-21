@@ -1,0 +1,40 @@
+{
+  "name": "anselm-capmcp",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@cap-js/mcp": "^1.4.3",
+    "@sap-cloud-sdk/connectivity": "^4",
+    "@sap-cloud-sdk/http-client": "^4",
+    "@sap-cloud-sdk/resilience": "^4",
+    "@sap/cds": "^10",
+    "@sap/xssec": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^3",
+    "@sap/cds-dk": "^10"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "destinations": true,
+      "connectivity": true,
+      "[production]": {
+        "auth": "ias"
+      },
+      "OP_API_SALES_ORDER_SRV_0001": {
+        "kind": "odata-v2",
+        "model": "srv/external/OP_API_SALES_ORDER_SRV_0001",
+        "[production]": {
+          "credentials": {
+            "destination": "S4H_MT_11",
+            "path": "/sap/opu/odata/sap/API_SALES_ORDER_SRV"
+          }
+        }
+      }
+    }
+  }
+}

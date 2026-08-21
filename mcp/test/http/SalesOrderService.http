@@ -1,0 +1,31 @@
+#############
+### LOCAL ###
+#############
+@server=http://localhost:4004
+@header-authorization = Basic alice:
+
+##############
+### REMOTE ###
+##############
+@server={{$dotenv URL}}
+
+### Request 1: OAuth2 Client Credentials Flow to get an access token
+# @name login
+POST {{$dotenv AUTH_TOKEN_URL}}
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials
+&client_id={{$dotenv CLIENT_ID}}
+&client_secret={{$dotenv CLIENT_SECRET}}
+
+### Save the token to a variable
+@header-authorization = Bearer {{login.response.body.access_token}}
+
+##################
+### OPERATIONS ###
+##################
+
+### SalesOrders
+# @name SalesOrder_GET
+GET {{server}}/odata/v4/sales-order/SalesOrders?$top=5
+Authorization: {{header-authorization}}

@@ -57,6 +57,7 @@ cd mcp
 cds init
 cds add nodejs
 cds add mta
+cds add ias
 cds add destination
 cds add connectivity
 ```
