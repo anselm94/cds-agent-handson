@@ -351,6 +351,9 @@ The annotation is the whole integration. Add it to the service definition in `mc
 
 ```diff
 +@mcp
++/**
++ * Sales Order Service provides access to sales orders and their items from the S/4HANA system.
++ */
  service SalesOrderService {
      ...
  }

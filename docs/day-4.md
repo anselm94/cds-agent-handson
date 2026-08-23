@@ -82,11 +82,9 @@ Create a file named `.env.example` at the project root. This acts as a template 
 
 ```properties
 AICORE_SERVICE_KEY={"serviceurls":{"AI_API_URL":"https://..."},"clientid":"...","clientsecret":"...","url":"https://..."}
-destinations=[{"name": "capla-mcp-api", "url": "http://localhost:4005", "username": "alice", "password": "alice"}]
 ```
 
 - **`AICORE_SERVICE_KEY`** — The full service key JSON for your SAP AI Core instance, obtained from the BTP cockpit.
-- **`destinations`** — A list of named HTTP destinations used by the CAP server (here pointing to a local MCP API).
 
 ---
 
