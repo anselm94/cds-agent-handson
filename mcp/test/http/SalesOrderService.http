@@ -1,13 +1,13 @@
 #############
 ### LOCAL ###
 #############
-@server=http://localhost:4004
+@server=http://localhost:4005
 @header-authorization = Basic alice:
 
 ##############
 ### REMOTE ###
 ##############
-@server={{$dotenv URL}}
+# @server={{$dotenv URL}}
 
 ### Request 1: OAuth2 Client Credentials Flow to get an access token
 # @name login

@@ -49,9 +49,9 @@ npm run watch
 
 # Part 2 — Locate the MCP server
 
-Your agent needs to answer one question before it can call any tool: **where is the MCP server?** On your laptop it is `localhost:4005`; in production it is a Cloud Foundry route behind IAS authentication. You solve this the same way SAP applications always do — with a **destination**, plus a graceful fallback so local development needs no infrastructure at all.
+Your agent needs to answer one question before it can call any tool: **where is the MCP server?** On your laptop it is `localhost:4005`; in production it is a Cloud Foundry route behind IAS authentication. You solve this the same way SAP applications always do — with a **destination**: one lookup that works everywhere, no hardcoded URLs in your agent code.
 
-## Step 4 — Create destination-aware helpers
+## Step 3 — Create destination-aware helpers
 
 Create `agent/srv/mcp/utils.js` with two helpers built on the SAP Cloud SDK connectivity module:
 
@@ -61,13 +61,9 @@ import {
   buildHeadersForDestination,
 } from "@sap-cloud-sdk/connectivity";
 
-export async function resolveDestinationUrl({ destinationName, fallbackUrl }) {
-  try {
-    const resolvedDest = await getDestination({ destinationName });
-    return resolvedDest?.url ?? fallbackUrl;
-  } catch (error) {
-    return fallbackUrl;
-  }
+export async function resolveDestinationUrl(destinationName) {
+  const resolvedDest = await getDestination({ destinationName });
+  return resolvedDest?.url ?? "";
 }
 
 export async function resolveDestinationHeaders(destinationName) {
@@ -93,23 +89,23 @@ export async function resolveDestinationHeaders(destinationName) {
 
 What each helper does:
 
-- **`resolveDestinationUrl`** — looks up a destination by name. If none exists (no CF environment, no `destinations` env var), it silently falls back to the given `fallbackUrl`. One code path works everywhere: laptop *and* cloud.
+- **`resolveDestinationUrl`** — looks up a destination by name.
 - **`resolveDestinationHeaders`** — uses `buildHeadersForDestination` to produce ready-to-send auth headers for the destination. For an `OAuth2ClientCredentials` destination this fetches a fresh access token and wraps it in an `Authorization: Bearer ...` header — no manual token handling in your code.
 
 > `@sap-cloud-sdk/connectivity` ships transitively with `@sap/cds` — no extra install needed.
 
 ---
 
-## Step 5 — Configure the `salesorder-mcp` destination
+## Step 4 — Configure the `mcp-salesorders-<identity>` destination
 
-The agent refers to the MCP server by the destination name **`salesorder-mcp`**. Align the local example file `agent/.env.example` accordingly:
+The agent refers to the MCP server by the destination name **`mcp-salesorders-<identity>`** — replace `<identity>` with your IAS identity, e.g. `mcp-salesorders-anselm`. Align the local example file `agent/.env.example` accordingly:
 
 ```properties
 AICORE_SERVICE_KEY={"serviceurls":{"AI_API_URL":"https://..."},"clientid":"...","clientsecret":"...","url":"https://..."}
-destinations=[{"name": "salesorder-mcp", "url": "http://localhost:4005/mcp/sales-order", "username": "alice", "password": "alice"}]
+destinations=[{"name": "mcp-salesorders-<identity>", "url": "http://localhost:4005/mcp/sales-order"}]
 ```
 
-> Note the URL carries the **full MCP path** `/mcp/sales-order`. The helper from Step 4 uses `destination.url` verbatim — no path is appended later.
+> Note the URL carries the **full MCP path** `/mcp/sales-order`. The helper from Step 3 uses `destination.url` verbatim — no path is appended later.
 
 For production, create the destination once in the BTP Cockpit — exactly like the Joule destination on Day 8, but pointing at your MCP app:
 
@@ -118,7 +114,7 @@ For production, create the destination once in the BTP Cockpit — exactly like 
 
    | Field             | Value                                              |
    | ----------------- | -------------------------------------------------- |
-   | Name              | `salesorder-mcp`                                   |
+   | Name              | `mcp-salesorders-<identity>`                       |
    | Type              | `HTTP`                                             |
    | URL               | `https://<your-deployment-url>/mcp/sales-order`    |
    | Authentication    | `OAuth2ClientCredentials`                          |
@@ -136,7 +132,7 @@ For production, create the destination once in the BTP Cockpit — exactly like 
 
 # Part 3 — Wire the tools into the agent
 
-## Step 6 — Discover tools from the MCP server
+## Step 5 — Discover tools from the MCP server
 
 Open `agent/srv/agents/bookshop-agent.js` and add the imports plus a `getMcpTools` function below your hand-written tools:
 
@@ -151,11 +147,8 @@ Open `agent/srv/agents/bookshop-agent.js` and add the imports plus a `getMcpTool
 
 ```javascript
 const getMcpTools = async () => {
-  const destinationName = "salesorder-mcp";
-  const mcpUrl = await resolveDestinationUrl({
-    destinationName,
-    fallbackUrl: "http://localhost:4005/mcp/sales-order",
-  });
+  const destinationName = "mcp-salesorders-<identity>";
+  const mcpUrl = await resolveDestinationUrl(destinationName);
 
   const mcpClient = new MultiServerMCPClient({
     mcpServers: {
@@ -169,7 +162,9 @@ const getMcpTools = async () => {
     },
   });
 
-  return await mcpClient.getTools();
+  return await mcpClient.getTools(["salesorder-mcp"], {
+    headers: await resolveDestinationHeaders(destinationName),
+  });
 };
 ```
 
@@ -183,7 +178,7 @@ Three things happen here:
 
 ---
 
-## Step 7 — Turn the agent into an async factory
+## Step 6 — Turn the agent into an async factory
 
 Fetching MCP tools is asynchronous network I/O — but module-level code cannot be async. So instead of exporting a finished `bookshopAgent` constant, export an async **factory function** and let the callers `await` it:
 
@@ -249,7 +244,7 @@ Finally, remove the now-unused `createMessageUpdate` import from `agent/srv/a2a/
 
 ---
 
-## Step 8 — Teach the agent its second role
+## Step 7 — Teach the agent its second role
 
 An agent only reaches for tools it knows exist, and the system prompt steers *which* role it plays. Update it in `bookshop-agent.js`:
 
@@ -263,7 +258,7 @@ An agent only reaches for tools it knows exist, and the system prompt steers *wh
 
 # Part 4 — Test end-to-end
 
-## Step 9 — Test locally with mixed prompts
+## Step 8 — Test locally with mixed prompts
 
 Run both apps in two terminals:
 
@@ -303,9 +298,19 @@ If all three prompts succeed, your agent now fluidly switches between the local 
 
 ---
 
+## Step 9 — Add destination service
+
+The agent CAP service needs the **Destination Service** to resolve destinations in production. Add it to `agent/mta.yaml`:
+
+```bash
+cds add destination
+```
+
+---
+
 ## Step 10 — Redeploy the agent and test remotely
 
-The production path exercises what Step 4 and 5 set up: the deployed agent resolves the `salesorder-mcp` destination and lets the Cloud SDK handle OAuth. Rebuild and redeploy the agent as usual:
+The production path exercises what Step 3 and 4 set up: the deployed agent resolves the `mcp-salesorders-<identity>` destination and lets the Cloud SDK handle OAuth. Rebuild and redeploy the agent as usual:
 
 ```bash
 cd agent
@@ -316,7 +321,7 @@ cf deploy mta_archives/*.mtar
 
 Then run the REMOTE section of `agent/test/http/AgentService.http`: execute the `login` request to obtain an access token from IAS, followed by the same `invoke` request against `{{server}}/odata/v4/agent/invoke`.
 
-> Prerequisite checklist if the deployed agent fails to answer sales-order questions: the `salesorder-mcp` destination exists (Step 5), its URL includes the `/mcp/sales-order` path, and **Check Connection** succeeds.
+> Prerequisite checklist if the deployed agent fails to answer sales-order questions: the `mcp-salesorders-<identity>` destination exists (Step 4), its URL includes the `/mcp/sales-order` path, and **Check Connection** succeeds.
 
 You can also re-run the day-8 Joule capability — ask Joule for *"the top sales orders"* and watch the A2A path drive the very same MCP-backed agent.
 

@@ -15,7 +15,8 @@
     "@sap/cds-dk": "^10"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "watch": "cds watch --port 4005"
   },
   "private": true,
   "cds": {

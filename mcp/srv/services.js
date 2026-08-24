@@ -8,11 +8,11 @@ export class SalesOrderService extends cds.ApplicationService {
       "OP_API_SALES_ORDER_SRV_0001",
     );
 
-    this.on("READ", SalesOrders, async (salesOrders, req) => {
+    this.on("READ", SalesOrders, async (req) => {
       return s4hanaSalesOrderSrv.run(req.query);
     });
 
-    this.on("READ", SalesOrderItems, async (salesOrderItems, req) => {
+    this.on("READ", SalesOrderItems, async (req) => {
       return s4hanaSalesOrderSrv.run(req.query);
     });
 
