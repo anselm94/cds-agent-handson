@@ -1,0 +1,4 @@
+SalesOrder,SalesOrderType,SalesOrganization,DistributionChannel,OrganizationDivision,SoldToParty,PurchaseOrderByCustomer,SalesOrderDate,CreationDate,CreatedByUser,TotalNetAmount,TransactionCurrency,OverallDeliveryStatus,OverallSDProcessStatus,RequestedDeliveryDate
+1001,OR,1000,10,00,1000001,PO-1001,2026-07-15,2026-07-15,CB9980000703,2500.000,EUR,B,B,2026-08-01
+1002,OR,1000,10,00,1000002,PO-2002,2026-07-20,2026-07-20,CB9980000703,780.500,USD,C,C,2026-07-30
+1003,TA,1000,10,00,1000003,PO-3003,2026-08-02,2026-08-02,CB9980000703,1420.000,EUR,A,A,2026-08-20

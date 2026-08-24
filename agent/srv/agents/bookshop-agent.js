@@ -5,6 +5,11 @@ import cds from "@sap/cds";
 import { tool } from "langchain";
 import { z } from "zod";
 import { getA2aServerUrl } from "../a2a/a2a-utils.js";
+import { MultiServerMCPClient } from "@langchain/mcp-adapters";
+import {
+  resolveDestinationUrl,
+  resolveDestinationHeaders,
+} from "../mcp/utils.js";
 
 const checkpointer = new MemorySaver();
 
@@ -14,7 +19,6 @@ const model = new OrchestrationClient({
       name: "gpt-5.4",
     },
   },
-  
 });
 
 const getBooksTool = tool(
@@ -76,12 +80,37 @@ const updateStockTool = tool(
   },
 );
 
-export const bookshopAgent = createAgent({
-  model: model,
-  systemPrompt: "You are a helpful SAP assistant.",
-  tools: [getBooksTool, updateStockTool],
-  checkpointer: checkpointer,
-});
+const getMcpTools = async () => {
+  const destinationName = "mcp-salesorders-anselm";
+  const mcpUrl = await resolveDestinationUrl(destinationName);
+
+  const mcpClient = new MultiServerMCPClient({
+    mcpServers: {
+      "salesorder-mcp": {
+        url: mcpUrl,
+      },
+    },
+    beforeToolCall: async () => {
+      const headers = await resolveDestinationHeaders(destinationName);
+      return { headers: headers };
+    },
+  });
+
+  return await mcpClient.getTools(["salesorder-mcp"], {
+    headers: await resolveDestinationHeaders(destinationName),
+  });
+};
+
+export const getAgent = async () => {
+  const mcpTools = await getMcpTools();
+
+  return createAgent({
+    model: model,
+    systemPrompt: "You are a helpful assistant. You have 2 distinct roles: 1) You can provide information about books and update stock in the bookshop. 2) You can retrieve sales orders in the SAP S/4HANA system.",
+    tools: [getBooksTool, updateStockTool, ...mcpTools],
+    checkpointer: checkpointer,
+  });
+};
 
 export const AgentCard = {
   name: "bookshop-agent",

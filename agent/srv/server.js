@@ -4,7 +4,7 @@ import cds from "@sap/cds";
 import express from "express";
 import { LangChainAgentExecutor } from "./a2a/a2a-executor.js";
 import {
-  bookshopAgent,
+  getAgent,
   AgentCard as BookshopAgentCard,
 } from "./agents/bookshop-agent.js";
 
@@ -15,6 +15,8 @@ cds.on("bootstrap", async (app) => {
   routerA2A.use(cds.middlewares.before);
 
   const taskStore = new InMemoryTaskStore();
+
+  const bookshopAgent = await getAgent();
   const agentExecutor = new LangChainAgentExecutor(bookshopAgent);
 
   // A2A JSON-RPC endpoint

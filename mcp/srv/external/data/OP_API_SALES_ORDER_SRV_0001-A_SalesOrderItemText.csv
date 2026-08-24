@@ -1,0 +1,4 @@
+SalesOrder,SalesOrderItem,Language,LongTextID,LongText
+1001,10,EN,Z001,Customer requires eco-friendly packaging
+1001,20,EN,Z001,Bundled with item 10
+1002,10,EN,Z001,Deliver to floor 3 loading dock

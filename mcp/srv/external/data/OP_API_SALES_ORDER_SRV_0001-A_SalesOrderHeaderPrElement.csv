@@ -1,0 +1,5 @@
+SalesOrder,PricingProcedureStep,PricingProcedureCounter,ConditionType,ConditionBaseValue,ConditionRateValue,ConditionCurrency,ConditionAmount,TransactionCurrency
+1001,10,1,FRT1,2500.000,50.000,EUR,50.000,EUR
+1001,20,1,MWST,2500.000,19.000,EUR,475.000,EUR
+1002,10,1,FRT1,780.500,20.000,USD,20.000,USD
+1003,10,1,MWST,1420.000,19.000,EUR,269.800,EUR

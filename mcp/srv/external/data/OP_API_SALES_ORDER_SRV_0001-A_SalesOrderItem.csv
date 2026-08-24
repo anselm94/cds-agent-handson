@@ -1,0 +1,7 @@
+SalesOrder,SalesOrderItem,HigherLevelItem,SalesOrderItemCategory,SalesOrderItemText,Material,MaterialGroup,RequestedQuantity,RequestedQuantityUnit,NetAmount,TransactionCurrency,ProductionPlant,DeliveryStatus,SDProcessStatus
+1001,10,,TAN,Notebook X1 Laptop,HT-1000,L001,5,PC,2000.000,EUR,1000,B,B
+1001,20,,TAN,Wireless Mouse,HT-1010,L002,25,PC,375.000,EUR,1000,B,B
+1001,30,,TAN,Laptop Bag,HT-1020,L003,10,PC,125.000,EUR,1000,A,A
+1002,10,,TAN,Office Chair,HT-1030,L004,4,PC,520.000,USD,1000,C,C
+1002,20,,TAN,Standing Desk,HT-1040,L005,2,PC,260.500,USD,1000,C,C
+1003,10,,TAN,Monitor 27 inch,HT-1050,L006,8,PC,1420.000,EUR,1000,A,A

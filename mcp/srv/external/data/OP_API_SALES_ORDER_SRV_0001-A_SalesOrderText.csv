@@ -1,0 +1,4 @@
+SalesOrder,Language,LongTextID,LongText
+1001,EN,Z001,Rush order - priority handling required
+1002,EN,Z001,Standard order for office furniture
+1003,EN,Z001,Inquiry converted to order

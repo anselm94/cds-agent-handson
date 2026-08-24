@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { bookshopAgent } from "./agents/bookshop-agent.js"
+import { getAgent } from "./agents/bookshop-agent.js"
 
 export class AgentService extends cds.ApplicationService {
   init() {
@@ -10,6 +10,7 @@ export class AgentService extends cds.ApplicationService {
         messages: [{ role: "user", content: message }],
       };
 
+      const bookshopAgent = await getAgent();
       const result = await bookshopAgent.invoke(agentInputs);
 
       console.log(result.messages[result.messages.length - 1].content);

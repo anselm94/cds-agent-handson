@@ -38,6 +38,7 @@ modules:
             credential-type: SECRET
             app-identifier: srv
       - name: anselm-capla-db
+      - name: anselm-capla-destination
 
   - name: anselm-capla-db-deployer
     type: hdb
@@ -71,3 +72,8 @@ resources:
     parameters:
       service: hana
       service-plan: hdi-shared
+  - name: anselm-capla-destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

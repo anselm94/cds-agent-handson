@@ -1,9 +1,8 @@
 import { Command, INTERRUPT, isInterrupted } from "@langchain/langgraph";
 import cds from "@sap/cds";
 import {
-  createMessageUpdate,
   createNewTask,
-  createTaskUpdate,
+  createTaskUpdate
 } from "./a2a-utils.js";
 
 const LOG = cds.log("a2a-agent");
