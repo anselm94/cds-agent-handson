@@ -1,9 +1,6 @@
 import { Command, INTERRUPT, isInterrupted } from "@langchain/langgraph";
 import cds from "@sap/cds";
-import {
-  createNewTask,
-  createTaskUpdate
-} from "./a2a-utils.js";
+import { createNewTask, createTaskUpdate } from "./a2a-utils.js";
 
 const LOG = cds.log("a2a-agent");
 
@@ -70,6 +67,11 @@ export class LangChainAgentExecutor {
           },
           config,
         );
+      }
+
+      // Print the conversation for debugging - to know skills, tools being invoked
+      for (const message of res.messages) {
+        console.log(`${message._getType()}: ${message.content}`);
       }
 
       if (isInterrupted(res)) {

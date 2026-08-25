@@ -7,6 +7,8 @@
     "@cap-js/hana": "^3",
     "@langchain/core": "^1.2.6",
     "@langchain/mcp-adapters": "^1.1.4",
+    "@langchain/textsplitters": "^1.0.1",
+    "@sap-ai-sdk/document-grounding": "^2.15.0",
     "@sap-ai-sdk/langchain": "^2.14.0",
     "@sap/cds": "^10",
     "@sap/xssec": "^4",

@@ -6,7 +6,7 @@ import { LangChainAgentExecutor } from "./a2a/a2a-executor.js";
 import {
   getAgent,
   AgentCard as BookshopAgentCard,
-} from "./agents/bookshop-agent.js";
+} from "./agents/bookshop-agent/agent.js";
 
 const LOG = cds.log("a2a-agent");
 

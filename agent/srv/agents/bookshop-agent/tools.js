@@ -1,25 +1,12 @@
-import { MemorySaver } from "@langchain/langgraph";
-import { createAgent } from "langchain";
-import { OrchestrationClient } from "@sap-ai-sdk/langchain";
+import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 import cds from "@sap/cds";
 import { tool } from "langchain";
 import { z } from "zod";
-import { getA2aServerUrl } from "../a2a/a2a-utils.js";
-import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 import {
-  resolveDestinationUrl,
   resolveDestinationHeaders,
-} from "../mcp/utils.js";
-
-const checkpointer = new MemorySaver();
-
-const model = new OrchestrationClient({
-  promptTemplating: {
-    model: {
-      name: "gpt-5.4",
-    },
-  },
-});
+  resolveDestinationUrl,
+} from "../../mcp/utils.js";
+import { SKILLS } from "./skills.js";
 
 const getBooksTool = tool(
   // runtime aspect
@@ -101,51 +88,59 @@ const getMcpTools = async () => {
   });
 };
 
-export const getAgent = async () => {
+const queryKBTool = tool(
+  // runtime aspect
+  async ({ query }) => {
+    const srv = await cds.connect.to("RAGService");
+
+    const res = await srv.send({
+      event: "query",
+      data: { query: query, collectionName: "collection-anselm" },
+    });
+
+    return JSON.stringify(res);
+  },
+
+  // design time aspect
+  {
+    name: "query-knowledge-base",
+    description: "Queries the Knowledge Base for SAP's AI Practical Use Cases",
+    schema: z.object({
+      query: z.string().describe("search query"),
+    }),
+  },
+);
+
+export const getTools = async () => {
   const mcpTools = await getMcpTools();
 
-  return createAgent({
-    model: model,
-    systemPrompt: "You are a helpful assistant. You have 2 distinct roles: 1) You can provide information about books and update stock in the bookshop. 2) You can retrieve sales orders in the SAP S/4HANA system.",
-    tools: [getBooksTool, updateStockTool, ...mcpTools],
-    checkpointer: checkpointer,
-  });
+  return [getBooksTool, updateStockTool, queryKBTool, ...mcpTools];
 };
 
-export const AgentCard = {
-  name: "bookshop-agent",
-  description: "Provides information about books and allows updating stock.",
-  url: getA2aServerUrl(),
-  provider: { organization: "Anselm", url: "https://example.com" },
-  version: "1.0.0",
-  capabilities: {
-    streaming: true,
-    pushNotifications: false,
-    stateTransitionHistory: false,
+export const loadSkill = tool(
+  // runtime aspect
+  async ({ skillName }) => {
+    // Find and return the requested skill
+    const skill = SKILLS.find((s) => s.name === skillName);
+    if (skill) {
+      return `Loaded skill: ${skillName}\n\n${skill.content}`;
+    }
+
+    // Skill not found
+    const available = SKILLS.map((s) => s.name).join(", ");
+    return `Skill '${skillName}' not found. Available skills: ${available}`;
   },
-  defaultInputModes: ["text"],
-  defaultOutputModes: ["text"],
-  skills: [
-    {
-      id: "get-books",
-      name: "Get Books",
-      description: "Gets the list of books from the bookshop",
-      tags: ["books"],
-      examples: ["List all books", "List books with a minimum price of 20"],
-      outputModes: ["text/plain"],
-    },
-    {
-      id: "update-stock",
-      name: "Update Stock",
-      description: "Updates the stock of a book in the bookshop",
-      tags: ["books", "stock"],
-      examples: [
-        "Increase stock of book with name - 'My book' by 5",
-        "Decrease stock of book with ID 2 by 3",
-      ],
-      outputModes: ["text/plain"],
-    },
-  ],
-  supportsAuthenticatedExtendedCard: false,
-  protocolVersion: "0.3.0",
-};
+
+  // design time aspect
+  {
+    name: "load_skill",
+    description: `Load the full content of a skill into the agent's context.
+
+Use this when you need detailed information about how to handle a specific
+type of request. This will provide you with comprehensive instructions,
+policies, and guidelines for the skill area.`,
+    schema: z.object({
+      skillName: z.string().describe("The name of the skill to load"),
+    }),
+  },
+);

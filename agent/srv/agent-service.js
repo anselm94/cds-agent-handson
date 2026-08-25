@@ -1,5 +1,5 @@
 import cds from "@sap/cds";
-import { getAgent } from "./agents/bookshop-agent.js"
+import { getAgent } from "./agents/bookshop-agent/agent.js";
 
 export class AgentService extends cds.ApplicationService {
   init() {
