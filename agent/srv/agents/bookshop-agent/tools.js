@@ -124,10 +124,57 @@ const getUserInfo = tool(
   },
 );
 
+const saveUserPreferences = tool(
+  async ({ text }, config) => {
+    const userId = config.state.userId;
+
+    await config.store.put(["users", "preferences"], userId, text);
+
+    return `Preferences for user ${userId} saved successfully.`;
+  },
+  {
+    name: "save-user-preferences",
+    description: "Save user preferences",
+    schema: z.object({
+      text: z.string().describe("User preferences to save"),
+    }),
+  },
+);
+
+const getUserPreferences = tool(
+  async (_, config) => {
+    const userId = config.state.userId;
+
+    const preferences = await config.store.get(
+      ["users", "preferences"],
+      userId,
+    );
+
+    if (preferences) {
+      return `Preferences for user ${userId}: ${preferences.value}`;
+    } else {
+      return `No preferences found for user ${userId}.`;
+    }
+  },
+  {
+    name: "get-user-preferences",
+    description: "Get user preferences",
+    schema: z.object({}),
+  },
+);
+
 export const getTools = async () => {
   const mcpTools = await getMcpTools();
 
-  return [getBooksTool, updateStockTool, queryKBTool, getUserInfo, ...mcpTools];
+  return [
+    getBooksTool,
+    updateStockTool,
+    queryKBTool,
+    getUserInfo,
+    saveUserPreferences,
+    getUserPreferences,
+    ...mcpTools,
+  ];
 };
 
 export const loadSkill = tool(

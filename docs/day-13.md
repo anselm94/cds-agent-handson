@@ -313,6 +313,10 @@ The tools alone are not enough. The prompt must tell the agent when to use them.
 In `agent/srv/agents/bookshop-agent/agent.js` the prompt now includes:
 
 ```javascript
+import { context } from "langchain";
+
+// ... 
+
 systemPrompt: context`You are a helpful assistant. 
     
     For every request, you must read user preferences to tailor your responses. If the user has preferences, save the preferences. 

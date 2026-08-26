@@ -1,11 +1,12 @@
-import { MemorySaver } from "@langchain/langgraph";
+import { MemorySaver, InMemoryStore } from "@langchain/langgraph";
 import { OrchestrationClient } from "@sap-ai-sdk/langchain";
-import { createAgent } from "langchain";
+import { context, createAgent } from "langchain";
 import { getA2aServerUrl } from "../../a2a/a2a-utils.js";
 import { getTools } from "./tools.js";
 import { getMiddlewares } from "./middlewares.js";
 
-const checkpointer = new MemorySaver();
+const checkpointer = new MemorySaver(); // short-term memory
+const store = new InMemoryStore(); // long-term memory
 
 const model = new OrchestrationClient({
   promptTemplating: {
@@ -18,11 +19,18 @@ const model = new OrchestrationClient({
 export const getAgent = async () => {
   return createAgent({
     model: model,
-    systemPrompt:
-      "You are a helpful assistant. You have 3 distinct roles: 1) You can provide information about books and update stock in the bookshop. 2) You can retrieve sales orders in the SAP S/4HANA system. 3) You can query the Knowledge Base for SAP's AI Practical Use Cases.",
+    systemPrompt: context`You are a helpful assistant. 
+    
+    For every request, you must read user preferences to tailor your responses. If the user has preferences, save the preferences. 
+      
+    You have 3 distinct roles: 
+      1) You can provide information about books and update stock in the bookshop. 
+      2) You can retrieve sales orders in the SAP S/4HANA system. 
+      3) You can query the Knowledge Base for SAP's AI Practical Use Cases.`,
     tools: await getTools(),
     middleware: await getMiddlewares(),
     checkpointer: checkpointer,
+    store: store,
   });
 };
 
