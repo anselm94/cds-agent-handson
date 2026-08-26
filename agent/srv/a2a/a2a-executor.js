@@ -64,6 +64,8 @@ export class LangChainAgentExecutor {
         res = await this.#agent.invoke(
           {
             messages: [{ role: "user", content: messageText }],
+            userId: cds.context?.user?.id,
+            tenantId: cds.context?.tenant,
           },
           config,
         );

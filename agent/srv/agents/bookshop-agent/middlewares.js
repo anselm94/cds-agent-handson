@@ -2,6 +2,8 @@ import { OrchestrationClient } from "@sap-ai-sdk/langchain";
 import { createMiddleware, summarizationMiddleware } from "langchain";
 import { SKILLS } from "./skills.js";
 import { loadSkill } from "./tools.js";
+import { z } from "zod";
+import { StateSchema } from "@langchain/langgraph";
 
 const model = new OrchestrationClient({
   promptTemplating: {
@@ -46,6 +48,16 @@ const summarizationMw = summarizationMiddleware({
   },
 });
 
+const UserState = new StateSchema({
+  userId: z.string(),
+  tenantId: z.string().optional(),
+});
+
+const stateExtMw = createMiddleware({
+  name: "StateExtension",
+  stateSchema: UserState,
+});
+
 export const getMiddlewares = async () => {
-  return [skillMw, summarizationMw];
+  return [skillMw, summarizationMw, stateExtMw];
 };

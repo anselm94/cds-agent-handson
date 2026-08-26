@@ -111,10 +111,23 @@ const queryKBTool = tool(
   },
 );
 
+const getUserInfo = tool(
+  async (_, config) => {
+    const userId = config.state.userId;
+    const tenantId = config.state.tenantId;
+    return `{"userId": "${userId}", "tenantId": "${tenantId}"}`;
+  },
+  {
+    name: "get-user-info",
+    description: "Get user info",
+    schema: z.object({}),
+  },
+);
+
 export const getTools = async () => {
   const mcpTools = await getMcpTools();
 
-  return [getBooksTool, updateStockTool, queryKBTool, ...mcpTools];
+  return [getBooksTool, updateStockTool, queryKBTool, getUserInfo, ...mcpTools];
 };
 
 export const loadSkill = tool(

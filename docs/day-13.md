@@ -19,43 +19,7 @@ In this codebase:
 
 ---
 
-# Part 1 - What changed
-
-## Short-term memory changes
-
-Files:
-
-- `agent/srv/agents/bookshop-agent/agent.js`
-- `agent/srv/agent-service.js`
-- `agent/srv/a2a/a2a-executor.js`
-- `agent/srv/agents/bookshop-agent/middlewares.js`
-- `agent/srv/agents/bookshop-agent/tools.js`
-
-Key additions:
-
-- `checkpointer: new MemorySaver()`
-- `configurable.thread_id` passed on every invoke
-- `StateSchema` for `userId` and `tenantId`
-- `get-user-info` tool to read state from the current run
-- summarization middleware stays in place to shrink long threads
-
-## Long-term memory changes
-
-Files:
-
-- `agent/srv/agents/bookshop-agent/agent.js`
-- `agent/srv/agents/bookshop-agent/tools.js`
-
-Key additions:
-
-- `store: new InMemoryStore()`
-- `save-user-preferences`
-- `get-user-preferences`
-- system prompt instructions to use preferences
-
----
-
-# Part 2 - Short-term memory
+# Part 1 - Short-term memory
 
 Short-term memory means: the agent remembers what happened earlier in the same conversation.
 
@@ -67,15 +31,14 @@ Examples:
 
 Those follow-up prompts only work if the agent can resume the same thread.
 
-## 2.1 Add a checkpointer
+## 1.1 Add a checkpointer
 
 In `agent/srv/agents/bookshop-agent/agent.js`:
 
 ```javascript
-import { MemorySaver, InMemoryStore } from "@langchain/langgraph";
+import { MemorySaver } from "@langchain/langgraph";
 
 const checkpointer = new MemorySaver(); // short-term memory
-const store = new InMemoryStore(); // long-term memory
 ```
 
 And register it in the agent:
@@ -97,7 +60,7 @@ What the checkpointer does:
 - allows follow-up questions
 - supports interrupt/resume flows
 
-## 2.2 Pass a stable `thread_id`
+## 1.2 Pass a stable `thread_id`
 
 The checkpointer only works if each conversation uses the same thread key.
 
@@ -149,11 +112,16 @@ Remember:
 - `thread_id` scopes short-term memory
 - if the thread changes, the memory changes
 
-## 2.3 Expose thread state to tools
+## 1.3 Expose thread state to tools
 
 In `agent/srv/agents/bookshop-agent/middlewares.js`:
 
 ```javascript
+import { z } from "zod";
+import { StateSchema } from "@langchain/langgraph";
+
+// ... other middlewares ...
+
 const UserState = new StateSchema({
   userId: z.string(),
   tenantId: z.string().optional(),
@@ -176,7 +144,7 @@ This lets tools read:
 - `config.state.userId`
 - `config.state.tenantId`
 
-## 2.4 `get-user-info` is a short-term memory example
+## 1.4 `get-user-info` is a short-term memory example
 
 In `agent/srv/agents/bookshop-agent/tools.js`:
 
@@ -193,6 +161,12 @@ const getUserInfo = tool(
     schema: z.object({}),
   },
 );
+
+export const getTools = async () => {
+  const mcpTools = await getMcpTools();
+
+  return [getBooksTool, updateStockTool, queryKBTool, getUserInfo, ...mcpTools];
+};
 ```
 
 Why this is **short-term** memory:
@@ -203,7 +177,7 @@ Why this is **short-term** memory:
 
 So `get-user-info` demonstrates: **state from the current conversation is available inside tools**.
 
-## 2.5 Summarization still matters
+## 1.5 Summarization still matters
 
 The summarization middleware is still configured in `middlewares.js`:
 
@@ -231,7 +205,7 @@ Short version:
 
 ---
 
-# Part 3 - Long-term memory
+# Part 2 - Long-term memory
 
 Long-term memory means: the agent remembers durable facts about the user.
 
@@ -245,11 +219,13 @@ Examples:
 
 These should survive beyond one prompt and be reusable later for the same user.
 
-## 3.1 Add a store
+## 2.1 Add a store
 
 In `agent/srv/agents/bookshop-agent/agent.js`:
 
 ```javascript
+import { InMemoryStore } from "@langchain/langgraph";
+
 const store = new InMemoryStore(); // long-term memory
 ```
 
@@ -265,7 +241,7 @@ Important for trainees:
 - restarting the app clears it
 - that is fine for learning the concept
 
-## 3.2 Save user preferences
+## 2.2 Save user preferences
 
 In `agent/srv/agents/bookshop-agent/tools.js`:
 
@@ -294,7 +270,7 @@ What it stores:
 - key: `userId`
 - value: the preference text
 
-## 3.3 Read user preferences
+## 2.3 Read user preferences
 
 Also in `tools.js`:
 
@@ -330,7 +306,7 @@ Why this is **long-term** memory:
 
 ---
 
-# Part 4 - Teach the agent to use memory
+# Part 3 - Teach the agent to use memory
 
 The tools alone are not enough. The prompt must tell the agent when to use them.
 
@@ -360,19 +336,19 @@ Practical note:
 
 ---
 
-# Part 5 - Quick mental model
+# Part 4 - Quick mental model
 
 Use this table when explaining Day 13:
 
-| Concept | LangChain feature | Key | Example |
-| --- | --- | --- | --- |
-| Short-term memory | `checkpointer` | `thread_id` | follow-up questions |
-| Short-term state in tools | `config.state` | current run/thread | `get-user-info` |
-| Long-term memory | `store` | `userId` | user preferences |
+| Concept                   | LangChain feature | Key                | Example             |
+| ------------------------- | ----------------- | ------------------ | ------------------- |
+| Short-term memory         | `checkpointer`    | `thread_id`        | follow-up questions |
+| Short-term state in tools | `config.state`    | current run/thread | `get-user-info`     |
+| Long-term memory          | `store`           | `userId`           | user preferences    |
 
 ---
 
-# Part 6 - Demo flow for trainees
+# Part 5 - Demo flow
 
 ## Demo 1 - Short-term memory
 
