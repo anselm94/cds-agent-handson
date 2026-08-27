@@ -25,7 +25,7 @@ const humanInTheLoopMw = humanInTheLoopMiddleware({
   interruptOn: {
     update_stock: {
       allowedDecisions: ["approve", "reject"],
-      description: "🚨 Update stock requires approval ('allowed'/'rejected')",
+      description: "🚨 Update stock requires approval ('approved'/'rejected')",
     },
   },
   descriptionPrefix: "Tool execution pending approval",
