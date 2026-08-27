@@ -1,5 +1,9 @@
 import { OrchestrationClient } from "@sap-ai-sdk/langchain";
-import { createMiddleware, summarizationMiddleware } from "langchain";
+import {
+  createMiddleware,
+  summarizationMiddleware,
+  humanInTheLoopMiddleware,
+} from "langchain";
 import { SKILLS } from "./skills.js";
 import { loadSkill } from "./tools.js";
 import { z } from "zod";
@@ -58,6 +62,16 @@ const stateExtMw = createMiddleware({
   stateSchema: UserState,
 });
 
+const humanInTheLoopMw = humanInTheLoopMiddleware({
+  interruptOn: {
+    update_stock: {
+      allowedDecisions: ["approve", "reject"],
+      description: "🚨 Update stock requires approval ('approved'/'rejected')",
+    },
+  },
+  descriptionPrefix: "Tool execution pending approval",
+});
+
 export const getMiddlewares = async () => {
-  return [skillMw, summarizationMw, stateExtMw];
+  return [skillMw, summarizationMw, stateExtMw, humanInTheLoopMw];
 };

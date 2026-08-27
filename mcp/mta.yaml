@@ -17,6 +17,7 @@ modules:
     parameters:
       instances: 1
       buildpack: nodejs_buildpack
+      memory: 256M
       routes:
         - route: "${default-url}"
         - route: "${default-host}.cert.${default-domain}"

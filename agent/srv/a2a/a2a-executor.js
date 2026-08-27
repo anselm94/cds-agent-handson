@@ -53,7 +53,7 @@ export class LangChainAgentExecutor {
           ? "approve"
           : messageText.toLowerCase().includes("reject")
             ? "reject"
-            : null;
+            : messageText;
         res = await this.#agent.invoke(
           new Command({
             resume: { decisions: [{ type: decision }] }, // or "reject"
