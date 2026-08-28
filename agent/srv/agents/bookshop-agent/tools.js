@@ -1,12 +1,9 @@
-import { MultiServerMCPClient } from "@langchain/mcp-adapters";
 import cds from "@sap/cds";
 import { tool } from "langchain";
 import { z } from "zod";
-import {
-  resolveDestinationHeaders,
-  resolveDestinationUrl,
-} from "../../mcp/utils.js";
 import { SKILLS } from "./skills.js";
+
+const LOG = cds.log("bookshop-agent");
 
 const getBooksTool = tool(
   // runtime aspect
@@ -24,6 +21,10 @@ const getBooksTool = tool(
     }
 
     const res = await srv.run(query);
+
+    LOG.info(
+      `Retrieved ${res.length} books from BookshopService with minPrice: ${minPrice}, maxPrice: ${maxPrice}`,
+    );
 
     return JSON.stringify(res);
   },
@@ -51,6 +52,10 @@ const updateStockTool = tool(
       params: [{ ID: bookId }],
     });
 
+    LOG.info(
+      `Updated stock for book ID: ${bookId} with increment: ${increment}. New stock: ${res.stock}`,
+    );
+
     return JSON.stringify(res);
   },
 
@@ -67,114 +72,8 @@ const updateStockTool = tool(
   },
 );
 
-const getMcpTools = async () => {
-  const destinationName = "mcp-salesorders-anselm";
-  const mcpUrl = await resolveDestinationUrl(destinationName);
-
-  const mcpClient = new MultiServerMCPClient({
-    mcpServers: {
-      "salesorder-mcp": {
-        url: mcpUrl,
-      },
-    },
-    beforeToolCall: async () => {
-      const headers = await resolveDestinationHeaders(destinationName);
-      return { headers: headers };
-    },
-  });
-
-  return await mcpClient.getTools(["salesorder-mcp"], {
-    headers: await resolveDestinationHeaders(destinationName),
-  });
-};
-
-const queryKBTool = tool(
-  // runtime aspect
-  async ({ query }) => {
-    const srv = await cds.connect.to("RAGService");
-
-    const res = await srv.send({
-      event: "query",
-      data: { query: query, collectionName: "collection-anselm" },
-    });
-
-    return JSON.stringify(res);
-  },
-
-  // design time aspect
-  {
-    name: "query-knowledge-base",
-    description: "Queries the Knowledge Base for SAP's AI Practical Use Cases",
-    schema: z.object({
-      query: z.string().describe("search query"),
-    }),
-  },
-);
-
-const getUserInfo = tool(
-  async (_, config) => {
-    const userId = config.state.userId;
-    const tenantId = config.state.tenantId;
-    return `{"userId": "${userId}", "tenantId": "${tenantId}"}`;
-  },
-  {
-    name: "get-user-info",
-    description: "Get user info",
-    schema: z.object({}),
-  },
-);
-
-const saveUserPreferences = tool(
-  async ({ text }, config) => {
-    const userId = config.state.userId;
-
-    await config.store.put(["users", "preferences"], userId, text);
-
-    return `Preferences for user ${userId} saved successfully.`;
-  },
-  {
-    name: "save-user-preferences",
-    description: "Save user preferences",
-    schema: z.object({
-      text: z.string().describe("User preferences to save"),
-    }),
-  },
-);
-
-const getUserPreferences = tool(
-  async (_, config) => {
-    const userId = config.state.userId;
-
-    const preferences = await config.store.get(
-      ["users", "preferences"],
-      userId,
-    );
-
-    if (preferences) {
-      return `Preferences for user ${userId}: ${preferences.value}`;
-    } else {
-      return `No preferences found for user ${userId}.`;
-    }
-  },
-  {
-    name: "get-user-preferences",
-    description: "Get user preferences",
-    schema: z.object({}),
-  },
-);
-
 export const getTools = async () => {
-  const mcpTools = await getMcpTools();
-
-  return [
-    getBooksTool,
-    updateStockTool,
-    queryKBTool,
-    getUserInfo,
-    saveUserPreferences,
-    getUserPreferences,
-    ...mcpTools,
-  ];
+  return [getBooksTool, updateStockTool];
 };
 
 export const loadSkill = tool(
@@ -183,6 +82,7 @@ export const loadSkill = tool(
     // Find and return the requested skill
     const skill = SKILLS.find((s) => s.name === skillName);
     if (skill) {
+      LOG.info(`Loaded skill: ${skillName}`);
       return `Loaded skill: ${skillName}\n\n${skill.content}`;
     }
 

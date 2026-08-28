@@ -1,7 +1,4 @@
-import {
-  createMiddleware,
-  humanInTheLoopMiddleware
-} from "langchain";
+import { createMiddleware } from "langchain";
 import { SKILLS } from "./skills.js";
 import { loadSkill } from "./tools.js";
 
@@ -30,16 +27,6 @@ const skillMw = createMiddleware({
   },
 });
 
-const humanInTheLoopMw = humanInTheLoopMiddleware({
-  interruptOn: {
-    update_stock: {
-      allowedDecisions: ["approve", "reject"],
-      description: "🚨 Update stock requires approval ('approved'/'rejected')",
-    },
-  },
-  descriptionPrefix: "Tool execution pending approval",
-});
-
 export const getMiddlewares = async () => {
-  return [skillMw, humanInTheLoopMw];
+  return [skillMw];
 };

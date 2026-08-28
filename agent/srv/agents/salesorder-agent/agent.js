@@ -14,7 +14,9 @@ const model = new OrchestrationClient({
 export const getAgent = async () => {
   return createAgent({
     model: model,
-    systemPrompt: context`You are a Bookshop Agent that can provide information about books and update stock in the bookshop.`,
+    systemPrompt: context`
+    You are a Sales Order Agent. You have access to an S/4HANA Sales Order system via an MCP server. 
+    `,
     tools: await getTools(),
     middleware: await getMiddlewares(),
   });

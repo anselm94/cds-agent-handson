@@ -5,8 +5,8 @@ import express from "express";
 import { LangChainAgentExecutor } from "./a2a/a2a-executor.js";
 import {
   getAgent,
-  AgentCard as BookshopAgentCard,
-} from "./agents/bookshop-agent/agent.js";
+  AgentCard as OrchestratorAgentCard,
+} from "./agents/orchestrator-agent/agent.js";
 
 const LOG = cds.log("a2a-agent");
 
@@ -16,19 +16,19 @@ cds.on("bootstrap", async (app) => {
 
   const taskStore = new InMemoryTaskStore();
 
-  const bookshopAgent = await getAgent();
-  const agentExecutor = new LangChainAgentExecutor(bookshopAgent);
+  const orchestratorAgent = await getAgent();
+  const agentExecutor = new LangChainAgentExecutor(orchestratorAgent);
 
   // A2A JSON-RPC endpoint
   routerA2A.get(`/.well-known/agent.json`, (_, res) =>
-    res.json(BookshopAgentCard),
+    res.json(OrchestratorAgentCard),
   );
 
   routerA2A.use(
     "/",
     jsonRpcHandler({
       requestHandler: new DefaultRequestHandler(
-        BookshopAgentCard,
+        OrchestratorAgentCard,
         taskStore,
         agentExecutor,
       ),
@@ -38,5 +38,5 @@ cds.on("bootstrap", async (app) => {
   app.use("/a2a", routerA2A);
 
   LOG.info(`A2A agent endpoint mounted:`);
-  LOG.info(`  Bookshop: GET  /.well-known/agent.json`);
+  LOG.info(`  Orchestrator: GET  /.well-known/agent.json`);
 });
