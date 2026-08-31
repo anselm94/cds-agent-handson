@@ -2,6 +2,9 @@ import cds from "@sap/cds";
 import { tool } from "langchain";
 import { z } from "zod";
 import { SKILLS } from "./skills.js";
+import { RptClient } from "@sap-ai-sdk/rpt";
+
+const rptClient = new RptClient("sap-rpt-1-small");
 
 const LOG = cds.log("bookshop-agent");
 
@@ -72,8 +75,75 @@ const updateStockTool = tool(
   },
 );
 
+const predictBookPriceTool = tool(
+  // runtime aspect
+  async ({ title, author_name }) => {
+    const srv = await cds.connect.to("BookshopService");
+
+    const query = SELECT.from("Books")
+      .columns("ID", "title", "price", "author.name")
+      .limit(5);
+    const res = await srv.run(query);
+
+    const prediction = await rptClient.predictWithSchema(
+      // Data schema
+      [
+        { name: "ID", dtype: "string" },
+        { name: "title", dtype: "string" },
+        { name: "price", dtype: "numeric" },
+        { name: "author_name", dtype: "string" },
+      ],
+      // Prediction data
+      {
+        prediction_config: {
+          target_columns: [
+            {
+              name: "price",
+              prediction_placeholder: "[PREDICT]",
+              task_type: "regression",
+            },
+          ],
+        },
+        index_column: "ID",
+        rows: [
+          ...res.map((book) => ({
+            ID: book.ID,
+            title: book.title,
+            price: book.price,
+            author_name: book["author.name"],
+          })),
+          {
+            ID: "new",
+            title: title,
+            price: "[PREDICT]",
+            author_name: author_name,
+          },
+        ],
+      },
+    );
+
+    const predictedPrice = prediction.predictions[0].price[0].prediction;
+
+    LOG.info(
+      `Predicted price for book '${title}' by '${author_name}' is ${predictedPrice}`,
+    );
+
+    return `Predicted price for book '${title}' by '${author_name}' is ${predictedPrice}`;
+  },
+
+  // design time aspect
+  {
+    name: "predict_book_price",
+    description: "Predicts the price of a book based on historical data",
+    schema: z.object({
+      title: z.string().describe("Title of the book"),
+      author_name: z.string().describe("Name of the author"),
+    }),
+  },
+);
+
 export const getTools = async () => {
-  return [getBooksTool, updateStockTool];
+  return [getBooksTool, updateStockTool, predictBookPriceTool];
 };
 
 export const loadSkill = tool(

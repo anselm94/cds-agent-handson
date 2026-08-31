@@ -48,7 +48,7 @@ const model = new OrchestrationClient({
         // sap data privacy integration for anonymization/pseudoanonymization of sensitive data
         method: "pseudonymization",
         entities: [
-          "profile-person",
+          // "profile-person",
           "profile-address",
           "profile-email",
           "profile-username-password",
@@ -66,7 +66,7 @@ export const getAgent = async () => {
     You have 2 roles:
       1. Query the Knowledge Base for SAP's AI Practical Use Cases, when asked for.
       2. You have access to 2 distinct subagents. Determine which subagent is best suited to handle the request and forward the request to the appropriate subagent. The subagents are:
-        - Bookshop Agent: Can provide information about books and update stock in the bookshop.
+        - Bookshop Agent: Can provide information about books, update stock and predict prices for books in the bookshop.
         - Sales Order Agent: Can retrieve sales orders in the SAP S/4HANA system.
 
     Important:

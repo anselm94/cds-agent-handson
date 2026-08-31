@@ -14,7 +14,7 @@ const model = new OrchestrationClient({
 export const getAgent = async () => {
   return createAgent({
     model: model,
-    systemPrompt: context`You are a Bookshop Agent that can provide information about books and update stock in the bookshop.`,
+    systemPrompt: context`You are a Bookshop Agent that can provide information about books, update stock and predict prices for books in the bookshop.`,
     tools: await getTools(),
     middleware: await getMiddlewares(),
   });

@@ -11,6 +11,7 @@
     "@langchain/textsplitters": "^1.0.1",
     "@sap-ai-sdk/document-grounding": "^2.15.0",
     "@sap-ai-sdk/langchain": "^2.14.0",
+    "@sap-ai-sdk/rpt": "^2.15.0",
     "@sap/cds": "^10",
     "@sap/xssec": "^4",
     "langchain": "^1.5.6"
