@@ -260,11 +260,11 @@ The following prompts will be used during evaluation. Your agent should handle t
 
 Expected behavior: Resolves MIA and HAV airport codes, searches flights, presents options with airline and timing details. No booking is made.
 
-> **Prompt 2:** "Book me a flight from San Francisco to Frankfurt for March 8th, 2027"
+> **Prompt 2:** "Book Jasmine Columbo a flight from San Francisco to Frankfurt for March 8th, 2027"
 
 Expected behavior: Resolves SFO and FRA, finds matching flights, retrieves business partner info (or prompts for customer ID), presents booking summary, and **pauses for HITL approval** before creating the booking.
 
-> **Prompt 3:** "I'm going on a family vacation from Venice to Tokyo on August 20th. Book it."
+> **Prompt 3:** "James Zimmermann is going on a family vacation from Venice to Tokyo on August 20th. Book it."
 
 Expected behavior: Resolves VCE and NRT/HND, finds flights, handles the context of "family vacation", requests any missing information (e.g., customer ID, number of passengers), presents booking summary, and pauses for HITL approval.
 
@@ -289,10 +289,12 @@ npm start
 
 Verify at: `http://localhost:4005/mcp/customer`
 
-### Step 2: Clone and Set Up the Starter Template
+### Step 2: Fork the Starter Template
+
+- Go to [cap-travel-agent-starter](https://github.com/anselm94/cap-travel-agent-starter) and fork the repository.
 
 ```bash
-git clone https://github.com/anselm94/cap-travel-agent-starter.git
+git clone https://github.com/<your-user-id>/cap-travel-agent-starter.git
 cd cap-travel-agent-starter
 npm install
 ```
